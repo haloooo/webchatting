@@ -10,6 +10,7 @@ import socket,json
 import hashlib
 import threading
 from base64 import b64encode
+from models.common import model_common
 
 #用户信息存储字典
 users={}
@@ -167,15 +168,19 @@ class WebSocket(threading.Thread):  # 继承Thread
                             regUser = dataObj['username']
                             retStatus = 0
                             try:
-                                if users[regUser] and users[regUser]['password'] == dataObj['password']:
-                                    if users[regUser]['status'] == 1:
-                                        retStatus = 2
-                                    else:
-                                        users[regUser]['status'] = 1
-                                        #toRead = users[regUser]['toRead']
-                                        #dataObj = {"type":"login","status":0,"toRead":'~'.join(toRead)}
-                                        users[regUser]['toRead'] = []
-                                        users[regUser]['conn'] = self.conn
+                                # if users[regUser] and users[regUser]['password'] == dataObj['password']:
+                                #     if users[regUser]['status'] == 1:
+                                #         retStatus = 2
+                                #     else:
+                                #         users[regUser]['status'] = 1
+                                #         #toRead = users[regUser]['toRead']
+                                #         #dataObj = {"type":"login","status":0,"toRead":'~'.join(toRead)}
+                                #         users[regUser]['toRead'] = []
+                                #         users[regUser]['conn'] = self.conn
+                                # else:
+                                #     retStatus = 1
+                                if model_common.checklogin(dataObj):
+                                    retStatus = 2
                                 else:
                                     retStatus = 1
                             except:
