@@ -11,6 +11,7 @@ import hashlib
 import threading
 from base64 import b64encode
 from models.common import model_common
+from libs import sqliteHelper
 
 #用户信息存储字典
 users={}
@@ -108,6 +109,7 @@ def send_data(dataObj):
                 users[user]['conn'].send(pack(data))
             except:
                 print('group Members error')
+
 class WebSocket(threading.Thread):  # 继承Thread
 
     GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -180,10 +182,13 @@ class WebSocket(threading.Thread):  # 继承Thread
                                 # else:
                                 #     retStatus = 1
                                 if model_common.checklogin(dataObj):
-                                    retStatus = 2
+                                    retStatus = 0
+                                    users[regUser] = {'password': dataObj['password'], 'conn': self.conn, 'status': 0,
+                                                      'friends': [], 'groups': [], 'toRead': []}
                                 else:
                                     retStatus = 1
-                            except:
+                            except Exception as ex:
+                                print(ex)
                                 retStatus = 1
                             finally:
                                 dataObj = {"type": "login", "status": retStatus}
@@ -191,12 +196,20 @@ class WebSocket(threading.Thread):  # 继承Thread
                                 self.conn.send(pack(data))
                             continue
                         if (dataObj['type'] == 'reg'):
-                            regUser = dataObj['username']
-                            if regUser in users:
+                            # regUser = dataObj['username']
+                            # if regUser in users:
+                            #     dataObj = {"type": "reg", "status": 1}
+                            # else:
+                            #     users[regUser] = {'password':dataObj['password'],'conn':self.conn,'status':0,'friends':[],'groups':[],'toRead':[]}
+                            #     dataObj = {"type":"reg","status":0}
+                            #     users[regUser]['status'] = 1
+                            msg = model_common.checkreg(dataObj)
+                            if msg['code'] == 0:
                                 dataObj = {"type": "reg", "status": 1}
-                            else:
-                                users[regUser] = {'password':dataObj['password'],'conn':self.conn,'status':0,'friends':[],'groups':[],'toRead':[]}
-                                dataObj = {"type":"reg","status":0}
+                            elif msg['code'] == 1:
+                                users[regUser] = {'password': dataObj['password'], 'conn': self.conn, 'status': 0,
+                                                  'friends': [], 'groups': [], 'toRead': []}
+                                dataObj = {"type": "reg", "status": 0}
                                 users[regUser]['status'] = 1
                             data = json.dumps(dataObj)
                             self.conn.send(pack(data))
@@ -204,24 +217,32 @@ class WebSocket(threading.Thread):  # 继承Thread
                         if (dataObj['type'] == 'addFriend'):
                             username = dataObj['username']
                             friendname = dataObj['target']
-                            if friendname not in users[username]['friends']:
-                                users[username]['friends'].append(friendname)
-                                users[friendname]['friends'].append(username)
-                                dataObj = {"type": "addFriend", "status": 0}
+                            # if friendname not in users[username]['friends']:
+                            #     users[username]['friends'].append(friendname)
+                            #     users[friendname]['friends'].append(username)
+                            #     dataObj = {"type": "addFriend", "status": 0}
+                            # else:
+                            #     dataObj = {"type":"reg","status":1}
+
+                            result = model_common.addFriend(username, friendname)
+                            if result['code'] == 0:
+                                dataObj = {"type": "addFriend", "status": 1}
                             else:
-                                dataObj = {"type":"reg","status":1}
+                                dataObj = {"type": "addFriend", "status": 0}
                             data = json.dumps(dataObj)
                             self.conn.send(pack(data))
                             continue
                         if (dataObj['type'] == 'search'):
                             keywords = dataObj['keywords']
-                            gps=[];persons=[]
-                            for g in groups:
-                                if keywords in g:
-                                    gps.append(g)
-                            for p in users:
-                                if keywords in p:
-                                    persons.append(p)
+                            gps = [];
+                            persons = [];
+                            # for g in groups:
+                            #     if keywords in g:
+                            #         gps.append(g)
+                            # for p in users:
+                            #     if keywords in p:
+                            #         persons.append(p)
+                            persons = model_common.searchUser(keywords)
                             dataObj={"type":"search",'groups':gps,'persons':persons}
                             data = json.dumps(dataObj)
                             self.conn.send(pack(data))
@@ -272,9 +293,15 @@ class WebSocket(threading.Thread):  # 继承Thread
                             data = json.dumps(dataObj)
                             self.conn.send(pack(data))
                             continue
+                        # if (dataObj['type'] == 'personal'):
+                        #     to = dataObj['to']
+                        #     msg = dataObj['msg']
+                        #     time = dataObj['time']
+                        #     data = json.dumps(dataObj)
+                        #     users[to]['conn'].send(pack(data))
                         send_data(dataObj)
-                    except:
-                        print('Something wrong!')
+                    except Exception as ex:
+                        print(ex + ' Something wrong!')
 
 
 class WebSocketServer(object):

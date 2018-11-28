@@ -1,6 +1,9 @@
 //by lockey23 2017/10/08
 (function(){
 	var socket;
+	function do_persons(val) {
+		alert(val)
+    }
 	function connect() {
 		var host = "ws://127.0.0.1:8899";
 		socket = new WebSocket(host);
@@ -135,18 +138,18 @@
 					
 					case 'search':
 					
-						groups = dataObj.groups
-						persons = dataObj.persons
-						console.log(typeof(groups),groups,typeof(persons),persons)
+						groups = dataObj.groups;
+						persons = dataObj.persons;
+						console.log(typeof(groups),groups,typeof(persons),persons);
 						gStr='';pStr='';
 						for(g in groups){
 							gStr+= '<div  class="ng-scope search-scope"><div ng-style="{height:topHeight}" class="top-placeholder ng-scope" style="height: 0px;"></div><div ng-repeat="chatContact in chatList track by chatContact.UserName" class="ng-scope"><div class="chat_item slide-left ng-scope top "><span class="name">'+groups[g]+'</span><span class="resultType">group</span></div></div></div>'
 						}
 						for(p in persons){
-							pStr+= '<div  class="ng-scope search-scope"><div ng-style="{height:topHeight}" class="top-placeholder ng-scope" style="height: 0px;"></div><div ng-repeat="chatContact in chatList track by chatContact.UserName" class="ng-scope"><div class="chat_item slide-left ng-scope top"><span class="name">'+persons[p]+'</span><span class="resultType">personal</span></div></div></div>'
+							pStr+= '<div  class="ng-scope search-scope"><div ng-style="{height:topHeight}" class="top-placeholder ng-scope" style="height: 0px;"></div><div ng-repeat="chatContact in chatList track by chatContact.UserName" class="ng-scope"><div class="chat_item slide-left ng-scope top"><span class="nickname_text name" data="personal">'+persons[p]['username']+'</span><span class="resultType">personal</span></div></div></div>'
 						}
 						appendStr = gStr+pStr;
-						$('#searchResult').html(appendStr)
+						$('#searchResult').html(appendStr);
 					break;
 					
 					case 'personal':
@@ -155,7 +158,7 @@
 						var currentUser = $('#chatArea .title_name').text();
 						if( currentUser == dataObj.from){
 						
-							msgFrom ='<div  class="ng-scope"><div class="clearfix"><divstyle="overflow: hidden;" ><div  class="message ng-scope you" ><div  class="message_system ng-scope"><div  class="content ng-binding ng-scope">'+dataObj.time+'</div></div><img class="avatar" src="images/head.png"><div class="content"><div class="bubble js_message_bubble ng-scope bubble_primary right"><div class="bubble_cont ng-scope"><div class="plain"><pre class="js_message_plain ng-binding" ng-bind-html="message.MMActualContent">'+dataObj.msg+'</pre></div></div></div></div></div></div></div></div>';
+							msgFrom ='<div  class="ng-scope"><div class="clearfix"><divstyle="overflow: hidden;" ><div  class="message ng-scope you" ><div  class="message_system ng-scope"><div  class="content ng-binding ng-scope">'+dataObj.time+'</div></div><img class="avatar" src="/static/images/head.png"><div class="content"><div class="bubble js_message_bubble ng-scope bubble_primary right"><div class="bubble_cont ng-scope"><div class="plain"><pre class="js_message_plain ng-binding" ng-bind-html="message.MMActualContent">'+dataObj.msg+'</pre></div></div></div></div></div></div></div></div>';
 							$('#msgContent').prepend(msgFrom);
 						}
 						else{
@@ -232,8 +235,8 @@
 			return false;
 		}
 		var times = new Date().Format("yyyy/MM/dd hh:mm:ss")
-		msgstrTo ='<div  class="ng-scope"><div class="clearfix"><divstyle="overflow: hidden;" ><div  class="message ng-scope me" ><div  class="message_system ng-scope"><div  class="content ng-binding ng-scope">'+times+'</div></div><img class="avatar" src="images/git.png"><div class="content"><div class="bubble js_message_bubble ng-scope bubble_primary right"><div class="bubble_cont ng-scope"><div class="plain"><pre class="js_message_plain ng-binding" ng-bind-html="message.MMActualContent">'+msg+'</pre></div></div></div></div></div></div></div></div>';
-		$('#msgContent').prepend(msgstrTo);
+		msgstrTo ='<div  class="ng-scope"><div class="clearfix"><divstyle="overflow: hidden;" ><div  class="message ng-scope me" ><div  class="message_system ng-scope"><div  class="content ng-binding ng-scope">'+times+'</div></div><img class="avatar" src="/static/images/git.PNG"><div class="content"><div class="bubble js_message_bubble ng-scope bubble_primary right"><div class="bubble_cont ng-scope"><div class="plain"><pre class="js_message_plain ng-binding" ng-bind-html="message.MMActualContent">'+msg+'</pre></div></div></div></div></div></div></div></div>';
+		$('#msgContent').append(msgstrTo);
 		var chatType = $('#chatArea .title_name').attr('data');
 		msg = {'type':chatType,'from':username,'to':$('#chatArea .title_name').text(),'msg':msg,'time':times};
 		msg = JSON.stringify(msg)
@@ -301,6 +304,7 @@
 	$("#panel").on("click",".chat_item",function(){
 		$('.commentsTips').css('visibility','hidden')
 		$('#editArea').attr('contenteditable',true);
+
 		var nickname = $(this).find('.nickname_text').text();
 		var chatType = $(this).find('.nickname_text').attr('data')
 		$('#chatArea .title_name').html(nickname).attr('data',chatType);
@@ -312,7 +316,7 @@
 		for(m in arr){
 			showCome = '';
 			if(chatType == 'group'){showCome = '('+arr[m].from+')';}
-			msgFrom += '<div  class="ng-scope"><div class="clearfix"><divstyle="overflow: hidden;" ><div  class="message ng-scope you" ><div  class="message_system ng-scope"><div  class="content ng-binding ng-scope">'+arr[m].time+showCome+'</div></div><img class="avatar" src="images/head.png"><div class="content"><div class="bubble js_message_bubble ng-scope bubble_primary right"><div class="bubble_cont ng-scope"><div class="plain"><pre class="js_message_plain ng-binding" ng-bind-html="message.MMActualContent">'+arr[m].msg+'</pre></div></div></div></div></div></div></div></div>';
+			msgFrom += '<div  class="ng-scope"><div class="clearfix"><divstyle="overflow: hidden;" ><div  class="message ng-scope you" ><div  class="message_system ng-scope"><div  class="content ng-binding ng-scope">'+arr[m].time+showCome+'</div></div><img class="avatar" src="/static/images/head.png"><div class="content"><div class="bubble js_message_bubble ng-scope bubble_primary right"><div class="bubble_cont ng-scope"><div class="plain"><pre class="js_message_plain ng-binding" ng-bind-html="message.MMActualContent">'+arr[m].msg+'</pre></div></div></div></div></div></div></div></div>';
 		}
 		$('#msgContent').append(msgFrom);
 		}
@@ -352,10 +356,10 @@
 				var setNone = setTimeout(function(){$('#joinInput').css('border','none');},2600);
 				return false;
 			}
-				msg={'type':'search','username':username,'keywords':keys}
+				msg={'type':'search','username':username,'keywords':keys};
 				msg=JSON.stringify(msg);//JSON.parse(json_str);
 				socket.send(msg);
-				$('.operations').hide()
+				$('.operations').hide();
 				$('#searchResult').show()
 	})
 	$('.fa-comments').click(function(){
